@@ -1,21 +1,7 @@
 # Speech-to-Text-WaveNet2 : End-to-end sentence level English speech recognition using DeepMind's WaveNet
 A tensorflow implementation of speech recognition based on DeepMind's [WaveNet: A Generative Model for Raw Audio](https://arxiv.org/abs/1609.03499). (Hereafter the Paper)
 
-Although [ibab](https://github.com/ibab/tensorflow-wavenet) and [tomlepaine](https://github.com/tomlepaine/fast-wavenet) have already implemented WaveNet with tensorflow, they did not implement speech recognition. That's why we decided to implement it ourselves. 
-
-Some of Deepmind's recent papers are tricky to reproduce. The Paper also omitted specific details about the implementation, and we had to fill the gaps in our own way.
-
-Here are a few important notes.
-
-First, while the Paper used the TIMIT dataset for the speech recognition experiment, we used the free VTCK dataset.
-
-Second, the Paper added a mean-pooling layer after the dilated convolution layer for down-sampling. We extracted [MFCC](https://en.wikipedia.org/wiki/Mel-frequency_cepstrum) from wav files and removed the final mean-pooling layer because the original setting was impossible to run on our TitanX GPU.
-
-Third, since the TIMIT dataset has phoneme labels, the Paper trained the model with two loss terms, phoneme classification and next phoneme prediction. We, instead, used a single CTC loss because VCTK provides sentence-level labels. As a result, we used only dilated conv1d layers without any dilated conv1d layers.
-
-Finally, we didn't do quantitative analyses such as BLEU score and post-processing by combining a language model due to the time constraints.
-
-The final architecture is shown in the following figure.
+The architecture is shown in the following figure.
 <p align="center">
   <img src="https://raw.githubusercontent.com/buriburisuri/speech-to-text-wavenet/master/png/architecture.png" width="1024"/>
 </p>
@@ -120,7 +106,7 @@ to transform a speech wave file to the English sentence. The result will be prin
 
 For example, try the following command.
 <pre><code>
-python recognize.py -input_path=data/demo.wav -ckpt_dir=pretrained
+python demo.py -input_path=data/demo.wav -ckpt_dir=pretrained
 </code></pre>
 
 The result will be as follows:
