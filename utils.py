@@ -1,6 +1,9 @@
 import glog
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
+import librosa
+import numpy as np
+import string
 from tensorflow.python import pywrap_tensorflow
 
 
@@ -54,3 +57,95 @@ def restore_from_pretrain(ckpt_dir):
     else:
       glog.warning("Can't restore %s. the variable is not exit in %s." % (to_name, ckpt_dir))
   return ops_to_restore
+
+
+class Data:
+  channels = 20
+  class_names = ['<EMP>', ' ', 'a', 'b', 'c', 'd', 'e', 'f', 'g',
+                 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q',
+                 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
+
+
+def read_wave(filepath, sample=3):
+  wave, sr = librosa.load(filepath, mono=True, sr=None)
+  wave = wave[::sample]
+  mfcc = np.transpose(librosa.feature.mfcc(wave, sr=16000, n_mfcc=Data.channels), [1, 0])
+  return mfcc
+
+
+def read_txt(filepath):
+  txt = open(filepath).read()
+  txt = ' '.join(txt.split())
+  txt = txt.translate(string.punctuation).lower()
+  reval = []
+  for ch in txt:
+    try:
+      if ch in Data.class_names:
+        reval.append(Data.class_names.index(ch))
+    except KeyError:
+      pass
+  return reval
+
+
+def cvt_np2string(inputs):
+  outputs = []
+  for input in inputs:
+    output = ''
+    for i in input:
+      ch = i.decode('utf-8')
+      if ch == '<EMP>':
+        continue
+      output += i.decode('utf-8')
+    outputs.append(output)
+  return outputs
+
+
+def _find_best_match(inputs):
+  matches = []
+  for input in inputs:
+    for i in input:
+      for match in matches:
+        if i > match[-1]:
+          matches.append(match + [i])
+      matches.append([i])
+  if len(matches) == 0:
+    return matches
+  else:
+    return sorted(matches, key=lambda iter: len(iter), reverse=True)[0]
+
+
+def _normalize(inputs):
+  inputs = inputs.split(' ')
+  outputs = []
+  for input in inputs:
+    if input != '':
+      outputs.append(input)
+  return outputs
+
+
+def evalute(predicts, labels):
+  predicts = _normalize(predicts)
+  labels = _normalize(labels)
+  matches = []
+  for label in labels:
+    match = []
+    for j, predict in enumerate(predicts):
+      if label == predict:
+        match.append(j)
+    if len(match) > 0:
+      matches.append(match)
+  match = _find_best_match(matches)
+  return len(match), len(predicts), len(labels)
+
+
+def evalutes(predicts, labels):
+  size = min(len(predicts), len(labels))
+  tp = 0
+  pred = 0
+  pos = 0
+  for i in range(size):
+    data = evalute(predicts[i], labels[i])
+    tp += data[0]
+    pred += data[1]
+    pos += data[2]
+  return tp, pred, pos

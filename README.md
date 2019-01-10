@@ -11,8 +11,9 @@ The architecture is shown in the following figure.
 ## Version 
 
 Current Version : __***2.0.0.0***__
-
-Note: Only demo.py finished. train and test are coming.
+- [x] demo
+- [x] test
+- [ ] train
 
 ## Dependencies
 
@@ -42,24 +43,12 @@ Audio was augmented by the scheme in the [Tom Ko et al](http://speak.clsp.jhu.ed
 
 ## Pre-processing dataset
 
-The TEDLIUM release 2 dataset provides audio data in the SPH format, so we should convert them to some format 
-librosa library can handle. Run the following command in the 'asset/data' directory convert SPH to wave format.  
-<pre><code>
-find -type f -name '*.sph' | awk '{printf "sox -t sph %s -b 16 -t wav %s\n", $0, $0".wav" }' | bash
-</code></pre>
-
-If you don't have installed `sox`, please installed it first.
-<pre><code>
-sudo apt-get install sox
-</code></pre>
-
-We found the main bottle neck is disk read time when training, so we decide to pre-process the whole audio data into 
-  the MFCC feature files which is much smaller. And we highly recommend using SSD instead of hard drive.  
-  Run the following command in the console to pre-process whole dataset.
-<pre><code>
-python preprocess.py
-</code></pre>
- 
+- Download and extract dataset(only VCTK support now.)
+- Assume the directory of VCTK dataset is f:/speech, Execute
+```
+python create_tf_record.py -input_dir='f:/speech'
+```
+to create record for train or test
 
 ## Training the network
 Coming soon !
@@ -88,13 +77,10 @@ The CTC losses at each epoch are as following table:
 
 
 ## Testing the network
-Coming soon !
-
-After training finished, you can check valid or test set CTC loss by the following command.
-<pre><code>
-python test.py --set train|valid|test --frac 1.0(0.01~1.0)
-</code></pre>
-The `frac` option will be useful if you want to test only the fraction of dataset for fast evaluation. 
+After training finished, you can evalute mode by the following command.
+```
+python test.py
+```
 
 ## Transforming speech wave file to English text 
  

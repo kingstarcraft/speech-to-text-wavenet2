@@ -5,3 +5,5 @@
 /.idea
 /.vs
 /pretrained
+/data
+/__pycache__

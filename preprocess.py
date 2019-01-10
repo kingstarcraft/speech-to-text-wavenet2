@@ -9,13 +9,8 @@ import subprocess
 
 __author__ = 'namju.kim@kakaobrain.com'
 
-# data path
 _data_path = "F:/Speech/"
 
-
-#
-# process VCTK corpus
-#
 
 def process_vctk(csv_file):
   # create csv writer
@@ -35,7 +30,7 @@ def process_vctk(csv_file):
     # wave file name
     wave_file = _data_path + 'VCTK-Corpus/wav48/%s/' % f[:4] + f + '.wav'
     fn = wave_file.split('/')[-1]
-    target_filename = 'asset/data/preprocess/mfcc/' + fn + '.npy'
+    target_filename = 'data/preprocess/mfcc/' + fn + '.npy'
     if os.path.exists(target_filename):
       continue
     # print info
@@ -61,18 +56,18 @@ def process_vctk(csv_file):
       np.save(target_filename, mfcc, allow_pickle=False)
 
 
-if not os.path.exists('asset/data/preprocess'):
-  os.makedirs('asset/data/preprocess')
-if not os.path.exists('asset/data/preprocess/meta'):
-  os.makedirs('asset/data/preprocess/meta')
-if not os.path.exists('asset/data/preprocess/mfcc'):
-  os.makedirs('asset/data/preprocess/mfcc')
+if not os.path.exists('data/preprocess'):
+  os.makedirs('data/preprocess')
+if not os.path.exists('data/preprocess/meta'):
+  os.makedirs('data/preprocess/meta')
+if not os.path.exists('data/preprocess/mfcc'):
+  os.makedirs('data/preprocess/mfcc')
 
 #
 # Run pre-processing for training
 #
 
 # VCTK corpus
-csv_f = open('asset/data/preprocess/meta/train.csv', 'w')
+csv_f = open('data/preprocess/meta/train.csv', 'w')
 process_vctk(csv_f)
 csv_f.close()
