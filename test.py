@@ -6,9 +6,9 @@ import glog
 import os
 
 flags = tf.app.flags
+flags.DEFINE_string('config_path', 'config.json', 'Directory to config.')
 flags.DEFINE_string('input_path', 'data/test.record', 'Path to wave file.')
-flags.DEFINE_string('pretrain_dir', 'pretrained', ' Directory of pretrain model.')
-flags.DEFINE_string('checkpoint_dir', 'ckpt', 'Path to directory holding a checkpoint.')
+flags.DEFINE_string('ckpt_dir', 'ckpt', 'Path to directory holding a checkpoint.')
 FLAGS = flags.FLAGS
 
 
@@ -17,19 +17,17 @@ def main(_):
   waves = tf.reshape(tf.sparse.to_dense(test_dataset[0]), shape=[1, -1, utils.Data.channels])
   seq_len = tf.reduce_sum(tf.cast(tf.not_equal(tf.reduce_sum(waves, axis=2), 0.), tf.int32), axis=1)
   labels = tf.sparse.to_dense(test_dataset[1])
-  class_names = tf.constant(utils.Data.class_names)
-  labels = tf.gather(class_names, labels)
-  logits = wavenet.bulid_wavenet(waves, len(utils.Data.class_names))
+  vocabulary = tf.constant(utils.Data.vocabulary)
+  labels = tf.gather(vocabulary, labels)
+  logits = wavenet.bulid_wavenet(waves, len(utils.Data.vocabulary))
   decodes, _ = tf.nn.ctc_beam_search_decoder(tf.transpose(logits, perm=[1, 0, 2]), seq_len,
                                              merge_repeated=False)
   glob_step = tf.train.create_global_step()
   outputs = tf.sparse.to_dense(decodes[0]) + 1
-  outputs = tf.gather(class_names, outputs)
-  restore_ops = utils.restore_from_pretrain(FLAGS.pretrain_dir)
+  outputs = tf.gather(vocabulary, outputs)
   save = tf.train.Saver()
   with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())
-    sess.run(restore_ops)
     if os.path.exists(FLAGS.checkpoint_dir) and len(os.listdir(FLAGS.checkpoint_dir)) > 0:
       save.restore(sess, tf.train.latest_checkpoint(FLAGS.checkpoint_dir))
 

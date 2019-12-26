@@ -4,6 +4,8 @@ import tensorflow.contrib.slim as slim
 import librosa
 import numpy as np
 import string
+import os
+import json
 from tensorflow.python import pywrap_tensorflow
 
 
@@ -60,16 +62,33 @@ def restore_from_pretrain(ckpt_dir):
 
 
 class Data:
-  channels = 20
-  class_names = ['<EMP>', ' ', 'a', 'b', 'c', 'd', 'e', 'f', 'g',
+  num_channel = 20
+  vocabulary = ['<EMP>', ' ', 'a', 'b', 'c', 'd', 'e', 'f', 'g',
                  'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q',
                  'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
+  sample_rate = 16000
 
 
-def read_wave(filepath, sample=3):
-  wave, sr = librosa.load(filepath, mono=True, sr=None)
-  wave = wave[::sample]
-  mfcc = np.transpose(librosa.feature.mfcc(wave, sr=16000, n_mfcc=Data.channels), [1, 0])
+def load(filepath=None):
+  if filepath is None:
+    return
+  if os.path.exists(filepath):
+    data = json.load(open(filepath, encoding='utf-8'))
+    if 'sample_rate' in data:
+      Data.sample_rate = data['sample_rate']
+    if 'num_channel' in data:
+      Data.num_channel = data['num_channel']
+    if 'vocabulary' in data:
+      Data.vocabulary = data['vocabulary']
+    glog.info("Load %s: sample_rate=%d, num_channel=%d, num_vocabulary=%d."
+              % (filepath, Data.sample_rate, Data.num_channel, len(Data.vocabulary)))
+  else:
+    glog.error("Can't found %s." % filepath)
+
+
+def read_wave(filepath):
+  wave, sr = librosa.load(filepath, mono=True, sr=Data.sample_rate)
+  mfcc = np.transpose(librosa.feature.mfcc(wave, sr=sr, n_mfcc=Data.num_channel), [1, 0])
   return mfcc
 
 
@@ -80,8 +99,10 @@ def read_txt(filepath):
   reval = []
   for ch in txt:
     try:
-      if ch in Data.class_names:
-        reval.append(Data.class_names.index(ch))
+      if ch in Data.vocabulary:
+        reval.append(Data.vocabulary.index(ch))
+      else:
+        glog.error('%s was not in vocabulary at %s'%(ch, filepath))
     except KeyError:
       pass
   return reval

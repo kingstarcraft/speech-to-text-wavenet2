@@ -5,7 +5,6 @@ import csv
 import librosa
 import data
 import os
-import subprocess
 
 __author__ = 'namju.kim@kakaobrain.com'
 
