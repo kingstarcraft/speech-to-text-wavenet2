@@ -46,7 +46,7 @@ def _create_dataset(input_dir, filenames, output_path):
     stem = os.path.splitext(os.path.split(filename[0])[-1])[0]
     wave = utils.read_wave(wave_path)
     text = utils.read_txt(txt_path)
-    if len(wave) > len(text):
+    if len(wave) >= len(text):
       data = tf.train.Example(features=tf.train.Features(feature={
         'uid': tf.train.Feature(bytes_list=tf.train.BytesList(value=[stem.encode('utf-8')])),
         'audio/data': tf.train.Feature(float_list=tf.train.FloatList(value=wave.reshape([-1]).tolist())),
@@ -55,7 +55,7 @@ def _create_dataset(input_dir, filenames, output_path):
       }))
       writer.write(data.SerializeToString())
     else:
-      glog.error("length of label(%d) is greater than feature(%d) at %s" % (len(text), len(wave)))
+      glog.error("length of label(%d) is greater than feature(%d) at %s." % (len(text), len(wave), stem))
 
     count = i + 1
     if count % 1000 == 0:

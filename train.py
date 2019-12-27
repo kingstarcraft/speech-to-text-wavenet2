@@ -15,27 +15,25 @@ FLAGS = flags.FLAGS
 
 
 def main(_):
-  inputs = tf.placeholder(shape=[None, None, 20], dtype=tf.float32)
-  labels = tf.placeholder(shape=[None, None], dtype=tf.int64)
+  train_dataset = dataset.create(FLAGS.train_dir, repeat=True)
   is_training = tf.placeholder(shape=[], dtype=tf.bool)
   global_step = tf.train.get_or_create_global_step()
-  logits = wavenet.bulid_wavenet(inputs, len(utils.Data.vocabulary), is_training)
-  loss = tf.nn.ctc_loss(labels=labels, inputs=logits, sequence_length=10, time_major=False)
-  outputs, _ = tf.nn.ctc_beam_search_decoder(tf.transpose(logits, perm=[1, 0, 2]), sequence_length,
-                                             merge_repeated=False)
+
+  logits = wavenet.bulid_wavenet(train_dataset[0], len(utils.Data.vocabulary), is_training)
+  loss = tf.nn.ctc_loss(labels=train_dataset[1], inputs=logits, sequence_length=[2], time_major=False)
+  outputs, _ = tf.nn.ctc_beam_search_decoder(tf.transpose(logits, perm=[1, 0, 2]), train_dataset[2],
+                                             merge_repeated=True)
   update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
   with tf.control_dependencies(update_ops):
     optimize = tf.train.AdamOptimizer(learning_rate=0.01).minimize(loss=loss, global_step=global_step)
   restore_op = utils.restore_from_pretrain(FLAGS.pretrain_dir)
   save = tf.train.Saver()
-  train_dataset = dataset.create(FLAGS.train_dir)
-  test_dataset = dataset.create(FLAGS.test_dir)
+
   with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())
     sess.run(restore_op)
     if len(os.listdir(FLAGS.checkpoint_dir)) > 0:
       save.restore(sess, tf.train.latest_checkpoint(FLAGS.checkpoint_dir))
-
 
 
 if __name__ == '__main__':

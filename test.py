@@ -13,7 +13,7 @@ FLAGS = flags.FLAGS
 
 
 def main(_):
-  test_dataset = dataset.create(FLAGS.input_path, batch_size=1, repeat=False)
+  test_dataset = dataset.create(FLAGS.test_dir, repeat=False, batch_size=1)
   waves = tf.reshape(tf.sparse.to_dense(test_dataset[0]), shape=[1, -1, utils.Data.channels])
   seq_len = tf.reduce_sum(tf.cast(tf.not_equal(tf.reduce_sum(waves, axis=2), 0.), tf.int32), axis=1)
   labels = tf.sparse.to_dense(test_dataset[1])
