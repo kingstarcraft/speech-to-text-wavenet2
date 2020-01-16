@@ -46,45 +46,22 @@ Audio was augmented by the scheme in the [Tom Ko et al](http://speak.clsp.jhu.ed
 - Download and extract dataset(only VCTK support now.)
 - Assume the directory of VCTK dataset is f:/speech, Execute
 ```
-python create_tf_record.py -input_dir='f:/speech'
+python tools/create_tf_record.py -input_dir='f:/speech'
 ```
 to create record for train or test
 
 ## Training the network
-Coming soon !
-
-Execute
-<pre><code>
-python train.py ( <== Use all available GPUs )
-or
-CUDA_VISIBLE_DEVICES=0,1 python train.py ( <== Use only GPU 0, 1 )
-</code></pre>
-to train the network. You can see the result ckpt files and log files in the 'asset/train' directory.
-Launch tensorboard --logdir asset/train/log to monitor training process.
-
-We've trained this model on a 3 Nvidia 1080 Pascal GPUs during 40 hours until 50 epochs and we picked the epoch when the 
-validatation loss is minimum. In our case, it is epoch 40.  If you face the out of memory error, 
-reduce batch_size in the train.py file from 16 to 4.  
-
-The CTC losses at each epoch are as following table:
-
-| epoch | train set | valid set | test set | 
-| :----: | ----: | ----: | ----: |
-| 20 | 79.541500 | 73.645237 | 83.607269 |
-| 30 | 72.884180 | 69.738348 | 80.145867 |
-| 40 | 69.948266 | 66.834316 | 77.316114 |
-| 50 | 69.127240 | 67.639895 | 77.866674 |
-
-
-## Testing the network
-After training finished, you can evalute mode by the following command.
+1. rename config/config.json.example to config/english-28.json
+2. Execute
 ```
-python test.py
 ```
 
-## Transforming speech wave file to English text 
+
+## Demo: Transforming speech wave file to English text 
  
-Execute
+1.Download [buriburisuri model](https://drive.google.com/file/d/1JDbJR6YS3H5l_HTHucKVWGa3oOhnrwL7/view?usp=sharing) and extract to 'release' directory
+
+2.Execute
 <pre><code>
 python demo.py -input_path <wave_file path>
 </code></pre>
@@ -92,7 +69,7 @@ to transform a speech wave file to the English sentence. The result will be prin
 
 For example, try the following command.
 <pre><code>
-python demo.py -input_path=data/demo.wav -ckpt_dir=pretrained
+python demo.py -input_path=data/demo.wav -ckpt_dir=release/buriburisuri
 </code></pre>
 
 The result will be as follows:
@@ -109,20 +86,11 @@ As mentioned earlier, there is no language model, so there are some cases where 
 
 ## pre-trained models
 
-You can transform a speech wave file to English text with the pre-trained model on the VCTK corpus. 
-Extract [the following zip file](https://drive.google.com/file/d/1K2PDW4pEH_ieX0WLQvv1aA_iKsr6xle4/view?usp=sharing) to the 'model' directory, and make sure the config.json in 'model/buriburisuri'.
-
-## Docker support
-
-See docker [README.md](docker/README.md).
+1. [buriburisuri model](https://drive.google.com/file/d/1JDbJR6YS3H5l_HTHucKVWGa3oOhnrwL7/view?usp=sharing) : convert model from https://github.com/buriburisuri/speech-to-text-wavenet.
 
 ## Future works
-
-1. Language Model
-1. Polyglot(Multi-lingual) Model
-
-We think that we should replace CTC beam decoder with a practical language model  
-and the polyglot speech recognition model will be a good candidate to future works.
+1. train with all punctuation
+1. add attention layer
 
 ## Other resources
 

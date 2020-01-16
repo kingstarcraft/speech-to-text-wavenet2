@@ -63,9 +63,9 @@ def restore_from_pretrain(ckpt_dir):
 
 class Data:
   num_channel = 20
-  vocabulary = ['<EMP>', ' ', 'a', 'b', 'c', 'd', 'e', 'f', 'g',
+  vocabulary = [' ', 'a', 'b', 'c', 'd', 'e', 'f', 'g',
                  'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q',
-                 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
+                 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '<EMP>']
   sample_rate = 16000
 
 
@@ -79,7 +79,7 @@ def load(filepath=None):
     if 'num_channel' in data:
       Data.num_channel = data['num_channel']
     if 'vocabulary' in data:
-      Data.vocabulary = data['vocabulary']
+      Data.vocabulary = data['vocabulary'] + ['<EMP>']
     glog.info("Load %s: sample_rate=%d, num_channel=%d, num_vocabulary=%d."
               % (filepath, Data.sample_rate, Data.num_channel, len(Data.vocabulary)))
   else:
@@ -101,8 +101,8 @@ def read_txt(filepath):
     try:
       if ch in Data.vocabulary:
         reval.append(Data.vocabulary.index(ch))
-      else:
-        glog.warning('%s was not in vocabulary at %s'%(ch, filepath))
+#     else:
+#       glog.warning('%s was not in vocabulary at %s'%(ch, filepath))
     except KeyError:
       pass
   return reval
@@ -121,6 +121,9 @@ def cvt_np2string(inputs):
   return outputs
 
 
+
+
+
 def _find_best_match(inputs):
   matches = []
   for input in inputs:
@@ -134,6 +137,52 @@ def _find_best_match(inputs):
   else:
     return sorted(matches, key=lambda iter: len(iter), reverse=True)[0]
 
+
+def _find_best_match2(inputs):
+  def _find_node(values, start=(-1, -1)):
+    node = []
+    for index in range(start[1] + 1, len(values)):
+      value = values[index]
+      if len(value) > 0:
+        for v in value:
+          if v > start[0]:
+            if len(node) == 0:
+              node.append((v, index))
+            elif v < node[-1][0]:
+              node.append((v, index))
+    return node
+
+  def _find_nodes(values):
+    nodes = []
+    while True:
+      if len(nodes) == 0:
+        node = _find_node(values)
+        if len(node) == 0:
+          break
+        for n in node:
+          nodes.append([n])
+      else:
+        tmps = []
+        change = False
+        for tmp in nodes:
+          node = _find_node(values, tmp[-1])
+          if len(node) == 0:
+            tmps.append(tmp)
+          else:
+            for n in node:
+              tmps.append(tmp + [n])
+            change = True
+
+        if change:
+          nodes = tmps
+        else:
+          break
+    return nodes
+  nodes = _find_nodes(inputs)
+  if len(nodes) == 0:
+    return []
+  else:
+    return sorted(nodes, key=lambda iter: len(iter), reverse=True)[0]
 
 def _normalize(inputs):
   inputs = inputs.split(' ')
@@ -155,7 +204,7 @@ def evalute(predicts, labels):
         match.append(j)
     if len(match) > 0:
       matches.append(match)
-  match = _find_best_match(matches)
+  match = _find_best_match2(matches)
   return len(match), len(predicts), len(labels)
 
 

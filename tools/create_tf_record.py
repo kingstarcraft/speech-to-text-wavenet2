@@ -2,12 +2,13 @@ import os
 import json
 import glog
 import utils
+import random
 import tensorflow as tf
 
 flags = tf.app.flags
 flags.DEFINE_string('input_dir', 'E:/speech', 'Directory to mmc dataset.')
 flags.DEFINE_string('list_path', 'data/list.json', 'Path to list.')
-flags.DEFINE_string('config_path', 'model/v28/config.json', 'Directory to config.')
+flags.DEFINE_string('config_path', 'config/english-28.json', 'Directory to config.')
 flags.DEFINE_integer('train_test_ratio', 10, 'The ratio of train to test.')
 flags.DEFINE_string('output_dir', 'data/v28', 'Path of output.')
 FLAGS = flags.FLAGS
@@ -39,7 +40,8 @@ def _read_vctk(root, ratio=10):
 
 def _create_dataset(input_dir, filenames, output_path):
   count = 0
-  writer = tf.python_io.TFRecordWriter(output_path)
+  writer = tf.python_io.TFRecordWriter(output_path+'.cache')
+  random.shuffle(filenames)
   for i, filename in enumerate(filenames):
     wave_path = input_dir + filename[0]
     txt_path = input_dir + filename[1]
@@ -62,6 +64,10 @@ def _create_dataset(input_dir, filenames, output_path):
       glog.info('processed %d/%d files.' % (count, len(filenames)))
   if count % 1000 != 0:
     glog.info('processed %d/%d files.' % (count, len(filenames)))
+  if os.path.exists(output_path):
+    os.remove(output_path)
+  if os.path.exists(output_path+'.cache'):
+    os.renames(output_path+'.cache', output_path)
 
 
 def main(_):

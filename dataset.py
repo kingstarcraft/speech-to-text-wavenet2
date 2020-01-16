@@ -1,7 +1,7 @@
 import tensorflow as tf
 
 
-def create(filepath, batch_size=1, repeat=False, buffsize=100000):
+def create(filepath, batch_size=1, repeat=False, buffsize=1000):
   def _parse(record):
     keys_to_features = {
       'uid': tf.FixedLenFeature([], tf.string),
@@ -17,7 +17,7 @@ def create(filepath, batch_size=1, repeat=False, buffsize=100000):
     shape = features['audio/shape'].values
     audio = tf.reshape(audio, shape)
     audio = tf.contrib.layers.dense_to_sparse(audio)
-    text = tf.contrib.layers.dense_to_sparse(features['text'])
+    text = features['text']
     return audio, text, shape[0], features['uid']
 
   dataset = tf.data.TFRecordDataset(filepath).map(_parse).batch(batch_size=batch_size).shuffle(buffer_size=buffsize)
