@@ -101,8 +101,8 @@ def read_txt(filepath):
     try:
       if ch in Data.vocabulary:
         reval.append(Data.vocabulary.index(ch))
-#     else:
-#       glog.warning('%s was not in vocabulary at %s'%(ch, filepath))
+      else:
+        glog.warning('%s was not in vocabulary at %s'%(ch, filepath))
     except KeyError:
       pass
   return reval

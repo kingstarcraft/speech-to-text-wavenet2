@@ -1,18 +1,20 @@
-import glog
-import os
 import glob
 import json
+import os
 import time
+
+import glog
 import tensorflow as tf
+
 import dataset
-import wavenet
 import utils
+import wavenet
 
 flags = tf.app.flags
 flags.DEFINE_string('config_path', 'config/english-28.json', 'Directory to config.')
 flags.DEFINE_string('dataset_path', 'data/v28/test.record', 'Path to wave file.')
 flags.DEFINE_string('device', '/gpu:1', 'the device used to test.')
-flags.DEFINE_string('ckpt_dir', 'pretrain', 'Path to directory holding a checkpoint.')
+flags.DEFINE_string('ckpt_dir', 'model/v28', 'Path to directory holding a checkpoint.')
 FLAGS = flags.FLAGS
 
 
@@ -37,17 +39,17 @@ def main(_):
 
     with tf.Session(config=tf.ConfigProto(allow_soft_placement=True)) as sess:
       sess.run(tf.global_variables_initializer())
-      initialized = False
+      status = 0
       while True:
         filepaths = glob.glob(FLAGS.ckpt_dir + '/*.index')
         for filepath in filepaths:
           model_path = os.path.splitext(filepath)[0]
           uid = os.path.split(model_path)[-1]
           if uid in evalutes:
-            if initialized:
-              time.sleep(60)
+            if status == 1:
               continue
           else:
+            status = 2
             save.restore(sess, model_path)
             evalutes[uid] = {}
             tps, preds, poses, count = 0, 0, 0, 0
@@ -76,7 +78,9 @@ def main(_):
           evalute = evalutes[uid]
           glog.info('Evalute %s: tp=%d, pred=%d, pos=%d, f1=%f.' %
                     (uid, evalute['tp'], evalute['pred'], evalute['pos'], evalute['f1']))
-        initialized = True
+        if status == 1:
+          time.sleep(60)
+        status = 1
 
 
 if __name__ == '__main__':

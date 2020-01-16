@@ -45,9 +45,11 @@ def main(_):
     with tf.Session(config=config) as sess:
       sess.run(tf.global_variables_initializer())
 
-      if len(os.listdir(FLAGS.pretrain_dir)) > 0:
+      if os.path.exists(FLAGS.pretrain_dir) and len(os.listdir(FLAGS.pretrain_dir)) > 0:
         save.restore(sess, tf.train.latest_checkpoint(FLAGS.pretrain_dir))
       ckpt_dir = os.path.split(FLAGS.ckpt_path)[0]
+      if not os.path.exists(ckpt_dir):
+        os.makedirs(ckpt_dir)
       if len(os.listdir(ckpt_dir)) > 0:
         save.restore(sess, tf.train.latest_checkpoint(ckpt_dir))
 
@@ -56,12 +58,12 @@ def main(_):
         gp, ll, ot, ls, _ = sess.run((global_step, labels, outputs, loss, optimize))
         tp, pred, pos = utils.evalutes(utils.cvt_np2string(ot), utils.cvt_np2string(ll))
         tps += tp
-        losses += ll
+        losses += ls
         preds += pred
         poses += pos
         if gp / FLAGS.display == 0:
           glog.info("Step %d: loss=%f, tp=%d, pos=%d, pred=%d, f1=%d." %
-                    (gp, losses / FLAGS.display, tps, preds, poses, 2 * tps / (preds + poses + 1e-10)))
+                    (gp, losses if gp == 0 else (losses / FLAGS.display), tps, preds, poses, 2 * tps / (preds + poses + 1e-10)))
           losses, tps, preds, poses = 0, 0, 0, 0
         if gp / FLAGS.snapshot == 0 and gp != 0:
           save.save(sess, FLAGS.ckpt_path)
