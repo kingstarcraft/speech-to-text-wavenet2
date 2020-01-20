@@ -24,10 +24,15 @@ def main(_):
   global_step = tf.train.get_or_create_global_step()
   train_dataset = dataset.create(FLAGS.dataset_path, FLAGS.batch_size, repeat=True)
 
-  waves = tf.reshape(tf.sparse.to_dense(train_dataset[0]), shape=[FLAGS.batch_size, -1, utils.Data.num_channel])
+  # bug tensorflow!!!  the  train_dataset[0].shape[0] != FLAGS.batch_size once in a while
+  # waves = tf.reshape(tf.sparse.to_dense(train_dataset[0]), shape=[FLAGS.batch_size, -1, utils.Data.num_channel])
+  waves = tf.sparse.to_dense(train_dataset[0])
+  waves = tf.reshape(waves, [tf.shape(waves)[0], -1, utils.Data.num_channel])
+
+
   labels = tf.cast(train_dataset[1], tf.int32)
   sequence_length = tf.cast(train_dataset[2], tf.int32)
-  logits = wavenet.bulid_wavenet(waves, len(utils.Data.vocabulary) + 1, is_training=True)
+  logits = wavenet.bulid_wavenet(waves, len(utils.Data.vocabulary), is_training=True)
   loss = tf.reduce_mean(tf.nn.ctc_loss(labels, logits, sequence_length, time_major=False))
 
   vocabulary = tf.constant(utils.Data.vocabulary)
@@ -55,17 +60,18 @@ def main(_):
 
     losses, tps, preds, poses = 0, 0, 0, 0
     while True:
-      gp, ll, ot, ls, _ = sess.run((global_step, labels, outputs, loss, optimize))
+      gp, ll, uid, ot, ls, _ = sess.run((global_step,  labels, train_dataset[3], outputs, loss, optimize))
       tp, pred, pos = utils.evalutes(utils.cvt_np2string(ot), utils.cvt_np2string(ll))
       tps += tp
       losses += ls
       preds += pred
       poses += pos
-      if gp / FLAGS.display == 0:
-        glog.info("Step %d: loss=%f, tp=%d, pos=%d, pred=%d, f1=%d." %
-                  (gp, losses if gp == 0 else (losses / FLAGS.display), tps, preds, poses, 2 * tps / (preds + poses + 1e-10)))
+      if gp % FLAGS.display == 0:
+        glog.info("Step %d: loss=%f, tp=%d, pos=%d, pred=%d, f1=%f." %
+                  (gp, losses if gp == 0 else (losses / FLAGS.display), tps, preds, poses,
+                   2 * tps / (preds + poses + 1e-10)))
         losses, tps, preds, poses = 0, 0, 0, 0
-      if gp / FLAGS.snapshot == 0 and gp != 0:
+      if gp % FLAGS.snapshot == 0 and gp != 0:
         save.save(sess, FLAGS.ckpt_path)
 
 

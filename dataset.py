@@ -20,7 +20,9 @@ def create(filepath, batch_size=1, repeat=False, buffsize=1000):
     text = features['text']
     return audio, text, shape[0], features['uid']
 
-  dataset = tf.data.TFRecordDataset(filepath).map(_parse).batch(batch_size=batch_size).shuffle(buffer_size=buffsize)
+  dataset = tf.data.TFRecordDataset(filepath).map(_parse).batch(batch_size=batch_size)
+  if buffsize > 0:
+    dataset = dataset.shuffle(buffer_size=buffsize)
   if repeat:
     dataset = dataset.repeat()
   return dataset.make_one_shot_iterator().get_next()
