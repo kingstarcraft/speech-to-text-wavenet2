@@ -25,4 +25,5 @@ def create(filepath, batch_size=1, repeat=False, buffsize=1000):
     dataset = dataset.shuffle(buffer_size=buffsize)
   if repeat:
     dataset = dataset.repeat()
-  return dataset.make_one_shot_iterator().get_next()
+  iterator = dataset.make_initializable_iterator()
+  return tuple(list(iterator.get_next()) + [iterator.initializer])

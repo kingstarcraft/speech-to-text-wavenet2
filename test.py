@@ -13,7 +13,7 @@ import wavenet
 flags = tf.app.flags
 flags.DEFINE_string('config_path', 'config/english-28.json', 'Directory to config.')
 flags.DEFINE_string('dataset_path', 'data/v28/test.record', 'Path to wave file.')
-flags.DEFINE_integer('device', 0, 'the device used to test.')
+flags.DEFINE_integer('device', 1, 'the device used to test.')
 flags.DEFINE_string('ckpt_dir', 'model/v28', 'Path to directory holding a checkpoint.')
 FLAGS = flags.FLAGS
 
@@ -41,7 +41,6 @@ def main(_):
   config = tf.ConfigProto(allow_soft_placement=True)
   config.gpu_options.allow_growth = True
   with tf.Session(config=config) as sess:
-    sess.run(tf.global_variables_initializer())
     status = 0
     while True:
       filepaths = glob.glob(FLAGS.ckpt_dir + '/*.index')
@@ -53,6 +52,8 @@ def main(_):
             continue
         else:
           status = 2
+          sess.run(tf.global_variables_initializer())
+          sess.run(test_dataset[-1])
           save.restore(sess, model_path)
           evalutes[uid] = {}
           tps, preds, poses, count = 0, 0, 0, 0
@@ -74,8 +75,8 @@ def main(_):
               break
 
           evalutes[uid]['tp'] = tps
-          evalutes[uid]['pred'] = pred
-          evalutes[uid]['pos'] = pos
+          evalutes[uid]['pred'] = preds
+          evalutes[uid]['pos'] = poses
           evalutes[uid]['f1'] = 2 * tps / (preds + poses + 1e-20)
           json.dump(evalutes, open(FLAGS.ckpt_dir + '/evalute.json', mode='w', encoding='utf-8'))
         evalute = evalutes[uid]

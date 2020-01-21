@@ -72,7 +72,7 @@ def main(_):
                    2 * tps / (preds + poses + 1e-10)))
         losses, tps, preds, poses = 0, 0, 0, 0
       if gp % FLAGS.snapshot == 0 and gp != 0:
-        save.save(sess, FLAGS.ckpt_path)
+        save.save(sess, FLAGS.ckpt_path, global_step=global_step)
 
 
 if __name__ == '__main__':
