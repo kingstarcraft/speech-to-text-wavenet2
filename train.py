@@ -12,7 +12,7 @@ flags.DEFINE_integer('batch_size', 32, 'Batch size of train.')
 flags.DEFINE_integer('display', 100, 'Step to display loss.')
 flags.DEFINE_integer('snapshot', 1000, 'Step to save model.')
 flags.DEFINE_integer('device', 0, 'The device used to train.')
-flags.DEFINE_string('pretrain_dir', 'pretrain', 'Filepath to test record.')
+flags.DEFINE_string('pretrain_dir', 'pretrain', 'Directory to pretrain.')
 flags.DEFINE_string('ckpt_path', 'model/v28/ckpt', 'Path to directory holding a checkpoint.')
 flags.DEFINE_float('learning_rate', 0.01, 'Learning rate of train.')
 FLAGS = flags.FLAGS

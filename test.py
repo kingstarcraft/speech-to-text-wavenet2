@@ -13,7 +13,7 @@ import wavenet
 flags = tf.app.flags
 flags.DEFINE_string('config_path', 'config/english-28.json', 'Directory to config.')
 flags.DEFINE_string('dataset_path', 'data/v28/test.record', 'Path to wave file.')
-flags.DEFINE_integer('device', 1, 'the device used to test.')
+flags.DEFINE_integer('device', 1, 'The device used to test.')
 flags.DEFINE_string('ckpt_dir', 'model/v28', 'Path to directory holding a checkpoint.')
 FLAGS = flags.FLAGS
 
