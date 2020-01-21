@@ -49,7 +49,7 @@ def main(_):
   config.gpu_options.allow_growth = True
   with tf.Session(config=config) as sess:
     sess.run(tf.global_variables_initializer())
-
+    sess.run(train_dataset[-1])
     if os.path.exists(FLAGS.pretrain_dir) and len(os.listdir(FLAGS.pretrain_dir)) > 0:
       save.restore(sess, tf.train.latest_checkpoint(FLAGS.pretrain_dir))
     ckpt_dir = os.path.split(FLAGS.ckpt_path)[0]
