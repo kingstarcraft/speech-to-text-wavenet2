@@ -48,7 +48,7 @@ def main(_):
         model_path = os.path.splitext(filepath)[0]
         uid = os.path.split(model_path)[-1]
         if uid in evalutes:
-          if status == 1:
+          if status != 0:
             continue
         else:
           status = 2
@@ -63,15 +63,15 @@ def main(_):
               y, y_ = sess.run((labels, outputs))
               y = utils.cvt_np2string(y)
               y_ = utils.cvt_np2string(y_)
-              tp, pred, pos = utils.evalutes(y, y_)
+              tp, pred, pos = utils.evalutes(y_, y)
               tps += tp
               preds += pred
               poses += pos
-              if count % 1000 == 0:
-                glog.info('processed %d: tp=%d, pred=%d, pos=%d.' % (count, tps, preds, poses))
+            #  if count % 1000 == 0:
+            #    glog.info('processed %d: tp=%d, pred=%d, pos=%d.' % (count, tps, preds, poses))
             except:
-              if count % 1000 != 0:
-                glog.info('processed %d: tp=%d, pred=%d, pos=%d.' % (count, tps, preds, poses))
+            #  if count % 1000 != 0:
+            #    glog.info('processed %d: tp=%d, pred=%d, pos=%d.' % (count, tps, preds, poses))
               break
 
           evalutes[uid]['tp'] = tps

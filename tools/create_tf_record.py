@@ -14,7 +14,7 @@ flags.DEFINE_string('output_dir', 'data/v28', 'Path of output.')
 FLAGS = flags.FLAGS
 
 
-def _read_vctk(root, ratio=10):
+def _read_vctk(root, ratio=0.2):
   ids = []
   for line in open(root + '/VCTK-Corpus/speaker-info.txt', 'r').readlines()[1:]:
     ids.append('/p' + line.split(' ')[0])
@@ -29,7 +29,7 @@ def _read_vctk(root, ratio=10):
         wav_name = wav_dir + '/' + filename
         txt_name = txt_dir + '/' + stem + '.txt'
         if os.path.exists(root + txt_name):
-          if i % ratio == 0:
+          if random.uniform(0, 1) < ratio:
             test_filenames.append((wav_name, txt_name))
           else:
             train_filenames.append((wav_name, txt_name))
