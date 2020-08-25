@@ -102,8 +102,9 @@ As mentioned earlier, there is no language model, so there are some cases where 
 1. [buriburisuri model](https://drive.google.com/file/d/1JDbJR6YS3H5l_HTHucKVWGa3oOhnrwL7/view?usp=sharing) : convert model from https://github.com/buriburisuri/speech-to-text-wavenet.
 
 # Future works
-1. train with all punctuation
-2. add attention layer
+1. try to tokenlize the english label with nltk
+2. train with all punctuation
+3. add attention layer
 
 # Other resources
 
