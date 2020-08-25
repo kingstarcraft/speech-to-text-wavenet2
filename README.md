@@ -21,6 +21,7 @@ Current Version : __***2.1.0.0***__
 1. tensorflow >= 1.12.0
 1. librosa
 1. [glog](https://github.com/benley/python-glog.git)
+1. nltk
 
 If you have problems with the librosa library, try to install ffmpeg by the following command. ( Ubuntu 14.04 )  
 <pre><code>
@@ -71,7 +72,7 @@ to evalute model.
 
 
 ## Demo
-1.Download pretrain model([buriburisuri model](https://drive.google.com/file/d/1JDbJR6YS3H5l_HTHucKVWGa3oOhnrwL7/view?usp=sharing)) and extract to 'release' directory
+1.Download pretrain model([buriburisuri model](https://drive.google.com/drive/folders/1HTxjhPnSqVpMkZS732pu3KOSJXZy8waf?usp=sharing)) and extract to 'release' directory
 
 2.Execute
 <pre><code>

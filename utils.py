@@ -6,6 +6,7 @@ import numpy as np
 import string
 import os
 import json
+import nltk
 from tensorflow.python import pywrap_tensorflow
 
 
@@ -64,8 +65,8 @@ def restore_from_pretrain(ckpt_dir):
 class Data:
   num_channel = 20
   vocabulary = [' ', 'a', 'b', 'c', 'd', 'e', 'f', 'g',
-                 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q',
-                 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '<EMP>']
+                'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q',
+                'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '<EMP>']
   sample_rate = 16000
 
 
@@ -102,7 +103,7 @@ def read_txt(filepath):
       if ch in Data.vocabulary:
         reval.append(Data.vocabulary.index(ch))
       else:
-        glog.warning('%s was not in vocabulary at %s'%(ch, filepath))
+        glog.warning('%s was not in vocabulary at %s' % (ch, filepath))
     except KeyError:
       pass
   return reval
@@ -119,9 +120,6 @@ def cvt_np2string(inputs):
       output += i.decode('utf-8')
     outputs.append(output)
   return outputs
-
-
-
 
 
 def _find_best_match(inputs):
@@ -178,11 +176,13 @@ def _find_best_match2(inputs):
         else:
           break
     return nodes
+
   nodes = _find_nodes(inputs)
   if len(nodes) == 0:
     return []
   else:
     return sorted(nodes, key=lambda iter: len(iter), reverse=True)[0]
+
 
 def _normalize(inputs):
   inputs = inputs.split(' ')
@@ -219,3 +219,8 @@ def evalutes(predicts, labels):
     pred += data[1]
     pos += data[2]
   return tp, pred, pos
+
+
+def tokenize(doc):
+  regex = "\w+'\w+|\w+|\S"
+  return nltk.tokenize.regexp_tokenize(doc, regex)
